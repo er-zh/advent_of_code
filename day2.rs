@@ -26,7 +26,7 @@ fn main()
     let ans = text
         .lines()
         .filter(|line| !line.is_empty())
-        .map(|line| line.split(' ').collect::<Vec<&str>>()) // split into tokens and toss "Game"
+        .map(|line| line.split(' ').collect::<Vec<&str>>()) // split into tokens
         .fold(0u32, |acc, vec| {
             let val = vec[1].replace(":","").parse::<u32>().unwrap();
             let rest = vec[2..].chunks(2);
