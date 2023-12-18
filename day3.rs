@@ -30,7 +30,6 @@ fn main()
 
     let mut sym_indices: Vec<(usize, char)> = vec![];
     let mut num_map = HashMap::new();
-    let mut accumulate: u32 = 0;
 
     for (idx, letter) in text.replace('\n', "").char_indices()
     {
@@ -63,21 +62,16 @@ fn main()
         if stop_collect
         {
             let val = Rc::new(RefCell::new(Some(collect)));
-            // this is an ugly while loop, but I don't know
-            // how I'm actually supposed to write this so
-            loop
+            while let Some(i) = trailing.pop()
             {
-                match trailing.pop()
-                {
-                    Some(i) => num_map.insert(i, val.clone()),
-                    None => break
-                };
+                num_map.insert(i, val.clone());
             }
             collect = 0;
             stop_collect = false;
         }
     }
 
+    let mut ans: u32 = 0;
     // soln for part 1
     /*
     for (idx, _) in &sym_indices
@@ -95,11 +89,10 @@ fn main()
                 match num_map.get(&(i * num_cols + j))
                 {
                     Some(val) => {
-                        let something = &*val;
-                        let refc = Rc::try_unwrap(something.into()).unwrap_or_else(|_| panic!("failed to unwrap Rc"));
+                        let refc = Rc::try_unwrap(val.into()).unwrap_or_else(|_| panic!("failed to unwrap Rc"));
                         let inside = refc.replace(None);
                         match inside {
-                            Some(num) => accumulate += num,
+                            Some(num) => ans += num,
                             None => ()
                         }
                     },
@@ -114,7 +107,7 @@ fn main()
     // gear or not
     for (idx, letter) in &sym_indices
     {
-        if letter != &'*' { continue; }
+        if *letter != '*' { continue; }
 
         let mut part_nums: Vec<u32> = vec![];
 
@@ -131,8 +124,7 @@ fn main()
                 match num_map.get(&(i * num_cols + j))
                 {
                     Some(val) => {
-                        let something = &*val;
-                        let refc = Rc::try_unwrap(something.into()).unwrap_or_else(|_| panic!("failed to unwrap Rc"));
+                        let refc = Rc::try_unwrap(val.into()).unwrap_or_else(|_| panic!("failed to unwrap Rc"));
                         let inside = refc.replace(None);
                         match inside {
                             Some(num) => part_nums.push(num),
@@ -146,10 +138,10 @@ fn main()
 
         if part_nums.len() == 2
         {
-            accumulate += part_nums[0] * part_nums[1];
+            ans += part_nums[0] * part_nums[1];
         }
     }
 
-    println!("{}", accumulate);
+    println!("{}", ans);
 }
 
