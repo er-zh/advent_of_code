@@ -14,8 +14,8 @@ pub struct RangeBst
 #[derive(Debug,Clone)]
 pub struct Node
 {
-    source: (u32, u32),
-    dest: u32,
+    source: (u64, u64),
+    dest: u64,
     left: Option<Box<Node>>,
     right: Option<Box<Node>>
 }
@@ -28,12 +28,12 @@ impl RangeBst
         Self{ root }
     }
 
-    pub fn map_dest(&self, src: u32) -> u32
+    pub fn map_dest(&self, src: u64) -> u64
     {
         Self::map(src, &self.root)
     }
 
-    fn map(val: u32, current_node: &Option<Box<Node>>) -> u32
+    fn map(val: u64, current_node: &Option<Box<Node>>) -> u64
     {
         match current_node
         {
@@ -56,7 +56,7 @@ impl RangeBst
         }
     }
 
-    pub fn insert(&mut self, source_range: (u32,u32), dest_start: u32)
+    pub fn insert(&mut self, source_range: (u64,u64), dest_start: u64)
     {
         let new_node = Box::new(Node {
             source: source_range,
@@ -95,7 +95,7 @@ impl RangeBst
         }
     }
 
-    fn compare_ranges(range1: (u32, u32), range2: (u32, u32)) -> i32
+    fn compare_ranges(range1: (u64, u64), range2: (u64, u64)) -> i32
     {
         if range1.0 > range2.1 {
             1
@@ -123,4 +123,50 @@ fn main()
 
     let text = read_to_string(&name).expect("bad file");
 
+    let mut seeds: Vec<u64> = vec![];
+    let mut maps: Vec<RangeBst> = vec![];
+    for line in text.lines()
+    {
+        if line == ""
+        {
+            continue;
+        }
+
+        let tokens = line.split(' ').collect::<Vec<&str>>();
+
+        if tokens.iter().any(|token| *token == "seeds:")
+        {
+            seeds = tokens[1..].iter().filter_map(|num_str| num_str.parse::<u64>().ok()).collect::<Vec<u64>>();
+        }
+        else if tokens.iter().any(|token| *token == "map:")
+        {
+            maps.push(RangeBst::new());
+        }
+        else
+        {
+            if let [dest, src, size] = tokens.iter().filter_map(|num_str| num_str.parse::<u64>().ok()).collect::<Vec<u64>>()[..]
+            {
+                match maps.last_mut()
+                {
+                    Some(map) => map.insert((src, src+size-1), dest),
+                    None => panic!("unexpected input, trying to insert range before any maps created")
+                }
+            }
+            else
+            {
+                panic!("unexpected input pattern for specifying a map: {:?}", tokens);
+            }
+        }
+    }
+
+    // soln to part 1
+    //let ans = seeds.iter().map(|seed| maps.iter().fold(*seed, |acc, map| map.map_dest(acc))).min();
+
+    // unga bunga brute force soln for part 2
+    let ans = seeds.chunks(2).map(|range| {
+        let range_iter = range[0]..range[0]+range[1]-1;
+        range_iter.map(|seed| maps.iter().fold(seed, |acc, map| map.map_dest(acc))).min()
+    }).min();
+
+    println!("{:?}", ans);
 }
