@@ -18,6 +18,29 @@ fn main() {
 
     let mut ans = 0;
 
+    let chars = text.lines().map(|line| line.chars().collect::<Vec<_>>()).collect::<Vec<Vec<_>>>();
+    let height = chars.len();
+    let width = chars[0].len();
+
+    for i in 1..height-1 {
+        for j in 1..width-1 {
+            let char = chars[i][j];
+
+            if char == 'A' {
+                let diag = (chars[i-1][j-1], chars[i+1][j+1]);
+                let antidiag = (chars[i-1][j+1], chars[i+1][j-1]);
+
+                let mut good = ((diag.0 == 'M') ^ (diag.1 == 'M')) && ((diag.0 == 'S') ^ (diag.1 == 'S'));
+                good &= ((antidiag.0 == 'M') ^ (antidiag.1 == 'M')) && ((antidiag.0 == 'S') ^ (antidiag.1 == 'S'));
+
+                if good {
+                    ans += 1;
+                }
+            }
+        }
+    }
+
+    /* part 1 soln
     let mut columns: Vec<Vec<_>> = vec![];
     let mut diagonals: Vec<Vec<_>> = vec![];
     let mut antidiagonals: Vec<Vec<_>> = vec![];
@@ -89,6 +112,7 @@ fn main() {
         ans += adiag.match_indices("XMAS").collect::<Vec<_>>().len();
         ans += adiag.match_indices("SAMX").collect::<Vec<_>>().len();
     }
+    */
 
     println!("{}", ans);
 }
