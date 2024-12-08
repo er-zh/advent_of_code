@@ -26,7 +26,7 @@ fn main() {
     let true_row_len = row_len + 1;
     let mut antinodes = HashSet::new();
 
-    for (key, locations) in antenna_pos.iter() {
+    for (_, locations) in antenna_pos.iter() {
         for i in 0..locations.len() {
             for j in i+1..locations.len() {
                 let node1 = locations[i];
@@ -40,6 +40,36 @@ fn main() {
 
                 let difference = node2 - node1;
 
+                antinodes.insert(node1);
+                let mut antinode1 = node1;
+                while antinode1 >= difference {
+                    antinode1 -= difference;
+                    let ax1 = antinode1 - (antinode1 / true_row_len) * true_row_len;
+                    if bytes[antinode1] != OOB {
+                        if !((x1 < x2 && x1 <= ax1) || (x2 < x1 && ax1 <= x1)) {
+                            antinodes.insert(antinode1);
+                            continue;
+                        }
+                    }
+
+                    break;
+                }
+
+                antinodes.insert(node2);
+                let mut antinode2 = node2;
+                while antinode2 + difference < bytes.len() {
+                    antinode2 += difference;
+                    let ax2 = antinode2 - (antinode2 / true_row_len) * true_row_len;
+                    if bytes[antinode2] != OOB {
+                        if !((x1 < x2 && ax2 <= x2) || (x2 < x1 && x2 <= ax2)) {
+                            antinodes.insert(antinode2);
+                            continue;
+                        }
+                    }
+
+                    break;
+                }
+                /* part 1
                 if node1 >= difference {
                     let antinode1 = node1 - difference;
                     let ax1 = antinode1 - (antinode1 / true_row_len) * true_row_len;
@@ -57,6 +87,7 @@ fn main() {
                         antinodes.insert(antinode2);
                     }
                 }
+                */
             }
         }
     }
